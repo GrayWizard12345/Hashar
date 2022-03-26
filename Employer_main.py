@@ -102,6 +102,7 @@ class WhiteTitleBar(QWidget):
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         self.init_sizes()
+        open_database_connection()
         resize_window(MainWindow)
         MainWindow.setObjectName("MainWindow")
 
@@ -236,7 +237,6 @@ class Ui_MainWindow(object):
             QMessageBox.warning(main_window, "Error!", "Please fill in all the fields.",
                                 QMessageBox.StandardButton.Ok)
         else:
-            open_database_connection()
             query = QSqlQuery()
             sql_ = f"INSERT INTO employer (name, login, pass, contact, address) VALUES {(name, login, pswd, contact, address)};"
             if query.exec(sql_):
@@ -259,7 +259,21 @@ class Ui_MainWindow(object):
         self.password_validation_box.clear()
 
     def log_in(self):
-        pass
+        pswd = self.auth_password_box.text()
+        login = self.auth_login_line_edit.text()
+
+        if login and pswd:
+            query = QSqlQuery()
+            sql_ = f"SELECT id FROM employer WHERE login = '{login}' and pass = '{pswd}';"
+
+            query.exec(sql_)
+            while(query.next()):
+                id_ = query.value(0)
+
+                return
+
+        QMessageBox.warning(main_window, "Error!", "Wrong password or login.",
+                            QMessageBox.StandardButton.Ok)
 
 
 if __name__ == '__main__':

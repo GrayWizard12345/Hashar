@@ -23,7 +23,6 @@ class WhiteTitleBar(QWidget):
         sizePolicy.setVerticalStretch(0)
 
         self.setSizePolicy(sizePolicy)
-        print(self.parent.width())
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 10, 0)
         self.title = QLabel("")
@@ -170,7 +169,6 @@ class Ui_MainWindow(object):
         self.SIZE_RATIO_LOGIN_WINDOW_LINE_EDIT = int(main_screen_width * 0.13), int(main_screen_height * 0.028)
         self.SIZE_RATIO_LOGIN_WINDOW_PUSH_BUTTON = int(main_screen_width * 0.058), int(main_screen_height * 0.0278)
         self.SIZE_RATIO_LOGIN_WINDOW_SPACING = int(main_screen_height * 0.0138)
-        print(self.SIZE_RATIO_LOGIN_WINDOW_SPACING)
 
     def create_authorization_form(self):
         self.login_line_edit = QLineEdit()
@@ -245,10 +243,7 @@ class Ui_MainWindow(object):
                 self.tab.setCurrentIndex(0)
                 self.clear_sign_up_fields()
             else:
-                logging.log(logging.INFO, query.lastError().text())
-                QMessageBox.critical(main_window, "Error!", "Oops, something went wrong! Check debug output for more details...",
-                                    QMessageBox.StandardButton.Ok)
-                QCoreApplication.quit()
+                self.show_something_went_wrong_and_exit(query)
 
     def clear_sign_up_fields(self):
         self.contact_line_edit.clear()
@@ -266,14 +261,23 @@ class Ui_MainWindow(object):
             query = QSqlQuery()
             sql_ = f"SELECT id FROM employer WHERE login = '{login}' and pass = '{pswd}';"
 
-            query.exec(sql_)
+            if not query.exec(sql_):
+                self.show_something_went_wrong_and_exit(query)
+
             while(query.next()):
                 id_ = query.value(0)
-
+                # TODO close the window and open the apps dashboard.
                 return
 
         QMessageBox.warning(main_window, "Error!", "Wrong password or login.",
                             QMessageBox.StandardButton.Ok)
+
+    def show_something_went_wrong_and_exit(self, query):
+        logging.log(logging.INFO, query.lastError().text())
+        QMessageBox.critical(main_window, "Error!",
+                             "Oops, something went wrong! Check debug output for more details...",
+                             QMessageBox.StandardButton.Ok)
+        QCoreApplication.quit()
 
 
 if __name__ == '__main__':
